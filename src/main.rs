@@ -1,5 +1,3 @@
-#![feature(decl_macro)]
-
 extern crate line_bot_sdk_rust as line;
 extern crate dotenv;
 
