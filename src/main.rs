@@ -3,7 +3,7 @@
 extern crate line_bot_sdk_rust as line;
 extern crate dotenv;
 
-use std::env;
+use std::{env, time, thread};
 use line::bot::LineBot;
 use line::messages::{SendMessageType, TextMessage};
 use dotenv::dotenv;
@@ -14,19 +14,24 @@ const LI_SELECTOR: &str = "li.productConfiguration__optionListItem";
 const BUTTON_SELECTOR: &str = "button.productConfiguration__selectVariant";
 const ATTR: &str = "data-product-size";
 const TARGET_SIZE: &str = "2XS";
+const UPDATE_INTERVAL_SECONDS: u64 = 600;
 
 fn main() {
     dotenv().ok();
+    loop {
+        let interval = time::Duration::from_secs(UPDATE_INTERVAL_SECONDS);
+        if check_stock() {
+            send_message();
+        }
+        thread::sleep(interval);
+    }
+}
 
-    let channel_secret: &str = &env::var("CHANNEL_SECRET").expect("Failed to get channel secret.");
-    let channel_token: &str = &env::var("CHANNEL_TOKEN").expect("Failed to get channel token");
-    
-    let bot = LineBot::new(channel_secret, channel_token);
-    
+fn check_stock() -> bool {
     let response = reqwest::blocking::get(PAGE_URL)
-        .unwrap()
-        .text()
-        .unwrap();
+    .unwrap()
+    .text()
+    .unwrap();
 
     let document = scraper::Html::parse_document(&response);
 
@@ -43,14 +48,19 @@ fn main() {
             Some(name) => name == TARGET_SIZE,
             None => false
         }; 
-        println!("In stock: {}", in_stock);
         if in_stock {
-            send_message(&bot);
+            return in_stock;
         }
     }
+    return false;
 }
 
-fn send_message(bot: &LineBot) {
+fn send_message() {
+    let channel_secret: &str = &env::var("CHANNEL_SECRET").expect("Failed to get channel secret.");
+    let channel_token: &str = &env::var("CHANNEL_TOKEN").expect("Failed to get channel token");
+    
+    let bot = LineBot::new(channel_secret, channel_token);
+
     let message_text = format!("There's a 2XS ultimate in stock!\n{}", PAGE_URL);
 
     let message = SendMessageType::TextMessage(TextMessage {
