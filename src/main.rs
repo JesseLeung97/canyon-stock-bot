@@ -8,8 +8,7 @@ use line::bot::LineBot;
 use line::messages::{SendMessageType, TextMessage};
 use dotenv::dotenv;
 
-const PAGE_URL: &str = "https://www.canyon.com/en-jp/road-bikes/race-bikes/ultimate/cf-sl/ultimate-cf-sl-8-wmn-disc/3069.html?dwvar_3069_pv_rahmenfarbe=BU%2FTQ";
-// "https://www.canyon.com/en-jp/road-bikes/race-bikes/ultimate/cf-sl/ultimate-cf-sl-7-wmn-disc/3068.html?dwvar_3068_pv_rahmenfarbe=BU%2FTQ",
+const PAGE_URL: &str = "https://www.canyon.com/en-jp/road-bikes/race-bikes/ultimate/cf-sl/ultimate-cf-sl-7-wmn-disc/3068.html?dwvar_3068_pv_rahmenfarbe=BU%2FTQ";
 const LI_SELECTOR: &str = "li.productConfiguration__optionListItem";
 const BUTTON_SELECTOR: &str = "button.productConfiguration__selectVariant";
 const ATTR: &str = "data-product-size";
@@ -19,6 +18,7 @@ const UPDATE_INTERVAL_SECONDS: u64 = 600;
 fn main() {
     dotenv().ok();
     loop {
+        println!("Checking for stock");
         let interval = time::Duration::from_secs(UPDATE_INTERVAL_SECONDS);
         if check_stock() {
             send_message();
